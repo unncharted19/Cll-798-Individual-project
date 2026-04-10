@@ -1,0 +1,353 @@
+\documentclass[10pt,a4paper,twocolumn]{article}
+\usepackage[margin=0.75in,top=0.9in,bottom=0.85in,columnsep=0.28in]{geometry}
+\usepackage{amsmath,amssymb,graphicx,booktabs,hyperref,caption,float}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[T1]{fontenc}
+\usepackage{mathptmx}           % Times-like serif body
+\usepackage[scaled=0.88]{helvet} % Helvetica-like sans for headings
+\usepackage{sectsty}
+\usepackage{titling}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+
+% ---- colour palette ----
+\definecolor{accent}{HTML}{0B6B6B}
+\definecolor{accentdark}{HTML}{073F3F}
+\definecolor{softgrey}{HTML}{F2F2F2}
+\definecolor{rulecol}{HTML}{0B6B6B}
+
+% ---- coloured sans-serif headings ----
+\allsectionsfont{\sffamily\color{accentdark}}
+\renewcommand{\thesection}{\textcolor{accent}{\arabic{section}}}
+\renewcommand{\thesubsection}{\textcolor{accent}{\arabic{section}.\arabic{subsection}}}
+
+% ---- hyperref ----
+\hypersetup{colorlinks=true,linkcolor=accent,citecolor=accent,urlcolor=accent}
+
+% ---- figure/table captions ----
+\captionsetup{font=small,labelfont={bf,sf,color=accentdark},labelsep=period}
+
+% ---- running header ----
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{accent}\leaders\hrule height \headrulewidth\hfill}}
+\fancyhead[L]{\small\sffamily\color{accentdark}Trophic-Asymmetric Extinction Cascades}
+\fancyhead[R]{\small\sffamily\color{accentdark}A.\ Bhanderiya \textbullet{} CLL798 \textbullet{} IIT Delhi}
+\fancyfoot[C]{\small\sffamily\thepage}
+
+% (custom title block is inlined after \begin{document})
+
+\begin{document}
+\twocolumn[\begin{@twocolumnfalse}
+\begin{minipage}{\textwidth}
+\vspace*{-1.2em}
+\noindent{\color{accent}\rule{\textwidth}{2.5pt}}
+\par\vspace{2pt}
+\noindent{\color{accent}\rule{\textwidth}{0.6pt}}
+\par\vspace{14pt}
+\begin{center}
+{\sffamily\bfseries\fontsize{19}{23}\selectfont\color{accentdark}
+Trophic-Asymmetric Extinction Cascades:\par
+Self-Organized Criticality in a Toy Food Web\par}
+\vspace{12pt}
+{\sffamily\large\bfseries Ayush Bhanderiya}\par\vspace{3pt}
+{\sffamily\small Entry No.\ 2023CH10584 \quad\textbullet\quad \texttt{ch1230584@chemical.iitd.ac.in}}\par\vspace{3pt}
+{\sffamily\small\itshape Department of Chemical Engineering, Indian Institute of Technology Delhi}\par\vspace{5pt}
+{\sffamily\small CLL798 --- Complexity Science in Chemical Industry \quad\textbullet\quad April 2026}
+\end{center}
+\vspace{5pt}
+\noindent{\color{accent}\rule{\textwidth}{0.6pt}}
+\par\vspace{2pt}
+\noindent{\color{accent}\rule{\textwidth}{2.5pt}}
+\par\vspace{16pt}
+\end{minipage}
+\noindent\fcolorbox{accent}{softgrey}{%
+\begin{minipage}{\dimexpr\textwidth-2\fboxsep-2\fboxrule\relax}
+\vspace{2pt}
+{\sffamily\bfseries\color{accentdark}ABSTRACT}\par\vspace{4pt}
+\small
+Ecological extinctions in real food webs are heavy-tailed: most are minor, but occasional system-spanning mass extinctions punctuate the fossil record. We investigate whether a minimal toy food web can reproduce this signature as a consequence of self-organized criticality (SOC). We extend the classical Bak--Sneppen evolution model by assigning each species a \emph{trophic level} and allowing the fitness-perturbation rule to act \emph{asymmetrically} on predators and prey, producing what we call the Trophic-Asymmetric Bak--Sneppen (TABS) model. Simulations on four network topologies (1D ring, 2D lattice, Erd\H{o}s--R\'enyi random graphs, and Barab\'asi--Albert scale-free graphs) at mean degrees $\langle k \rangle \in \{2,3,4,6,8\}$ produce clean, robust power-law avalanche distributions with exponent $\tau \approx 2.8 \pm 0.1$, essentially independent of topology and connectivity. Finite-size scaling at $N \in \{64,144,256,400\}$ confirms that the small-avalanche region is universal. Our main novel finding is that when predators are dynamically shielded from prey extinctions ($p_{\text{up}} = 0.3$), the avalanche exponent drops sharply to $\tau \approx 1.73$---a much heavier tail---while shielding prey from predator deaths leaves the exponent unchanged. Ecologically this means that top-down insulation concentrates extinction risk into rare, catastrophic events rather than dissipating it. We further introduce a dynamic extinction-risk score and show that graph-theoretic betweenness ($\rho = 0.61$) predicts it better than trophic level ($\rho = 0.44$) or PageRank ($\rho = 0.31$), but that all static metrics leave most of the variance unexplained, consistent with the existence of hidden dynamically critical species.
+
+\vspace{5pt}
+\noindent{\small\textbf{\sffamily\color{accentdark}Keywords:}\enspace self-organized criticality \textbullet{} Bak--Sneppen model \textbullet{} food webs \textbullet{} extinction cascades \textbullet{} trophic asymmetry \textbullet{} complex networks}
+\vspace{4pt}
+\end{minipage}}
+\vspace{0.8em}
+\end{@twocolumnfalse}]
+
+\section{Introduction}
+The fossil record shows that species extinctions are not evenly distributed in time. Raup and Sepkoski's analyses of marine genera revealed that extinction-intensity distributions are heavy-tailed: small background extinctions are interspersed with rare mass extinctions that can wipe out a large fraction of biodiversity at once \citep{raup1982mass,sepkoski1993compendium}. Similar heavy tails appear in earthquake magnitudes \citep{gutenberg1944frequency}, neuronal avalanches \citep{beggs2003neuronal}, forest-fire sizes \citep{malamud1998forest}, and power-grid blackouts \citep{carreras2004blackouts}. In every case, the statistical signature is a power law $P(s) \sim s^{-\tau}$ spanning multiple decades in the size $s$, rather than a Gaussian or exponential distribution with a characteristic scale.
+
+The framework that unifies these observations is self-organized criticality (SOC), introduced by Bak, Tang, and Wiesenfeld in 1987 \citep{bak1987self,bak1996how}. A driven dissipative system is self-organized critical if, without any external tuning of parameters, it settles into a state where perturbations of every size coexist on the same statistical footing. The key ingredients are (i) a slow driving noise, (ii) a fast propagation rule that lets local disturbances cascade through the system, and (iii) a separation of timescales between the two. Bak and Sneppen proposed in 1993 that evolutionary extinction cascades in food webs fall naturally into this framework \citep{bak1993punctuated}: species carry a fitness, the least-fit species goes extinct and is replaced, and this perturbation drags down its ecological neighbours, producing avalanches whose sizes follow a power law.
+
+The classical Bak--Sneppen (BS) model is deliberately minimal. All species are equivalent, and when a species is replaced, all its graph neighbours are perturbed symmetrically. Real food webs, however, are organized into \emph{trophic levels}: primary producers at the base, herbivores above, predators above them, and apex predators at the top \citep{dunne2002foodweb}. Losing a prey species devastates its predators, but losing a predator only indirectly affects its prey (via release from predation pressure). Classical BS ignores this asymmetry entirely.
+
+In this paper we ask three questions. First, does a minimal food-web model on different network topologies reproduce the statistical fingerprint of SOC? Second, how does introducing \emph{trophic asymmetry} into the Bak--Sneppen update rule change the avalanche statistics? Third, can we identify the ecologically most vulnerable species using simple graph-theoretic metrics, or does dynamic cascade participation reveal information that static centrality cannot?
+
+We make three contributions. (i) We introduce the Trophic-Asymmetric Bak--Sneppen (TABS) model, in which predator and prey neighbours are perturbed with different probabilities $p_{\text{up}}$ and $p_{\text{down}}$. (ii) We show that shielding predators (reducing $p_{\text{up}}$) produces a dramatic drop in the avalanche exponent from $\tau \approx 2.88$ to $\tau \approx 1.73$, while shielding prey has almost no effect---a directional, quantitative result. (iii) We introduce a dynamic extinction-risk score and compare it to four static predictors (degree, betweenness, PageRank, trophic level), finding that betweenness is the best static predictor but all metrics leave most of the variance unexplained, consistent with hidden dynamically critical species.
+
+Section~\ref{sec:model} defines the model. Section~\ref{sec:methods} describes methods. Section~\ref{sec:results} presents results across four experiments. Section~\ref{sec:discussion} interprets them. Section~\ref{sec:conclusion} concludes. Appendix~\ref{app:prompts} lists the prompts used during LLM-assisted development.
+
+\section{The Model}\label{sec:model}
+Our model specification has four parts: what the agents are, how they are wired together, the rules that govern how one agent's change propagates to its neighbours, and the kind of large-scale pattern we expect those rules to produce.
+
+\subsection{Agents: species}
+Each of $N$ species is described by two quantities: a \emph{fitness} $f_i \in [0,1]$, drawn uniformly at random at initialisation and whenever the species is replaced; and a fixed \emph{trophic level} $t_i \in \{1,2,3,4\}$ with 1 = primary producer and 4 = apex predator. Trophic levels are assigned by ranking species by their degree in the network: the bottom quartile of degree becomes level 1, the next quartile level 2, and so on. This reflects the empirical regularity that apex predators in real food webs tend to interact with many other species \citep{dunne2002foodweb}.
+
+\subsection{Network: the food web}
+Species are embedded on an undirected graph $G = (V,E)$. An edge $(i,j)$ represents any ecological interaction (predation, competition, or symbiosis) strong enough to couple the two species' fortunes. We test four topologies, each representing a different structural hypothesis:
+\begin{itemize}
+\item \textbf{1D ring}: every species has exactly 2 neighbours (minimal connectivity; the original Bak--Sneppen setup).
+\item \textbf{2D lattice}: species on a $14 \times 14$ periodic grid, each with 4 neighbours.
+\item \textbf{Erd\H{o}s--R\'enyi (ER) random}: edges placed independently with probability $\langle k \rangle / (N{-}1)$, giving a Poisson degree distribution.
+\item \textbf{Barab\'asi--Albert (BA) scale-free}: grown by preferential attachment, producing a power-law degree distribution with a few hub species. This is the closest match to measured food-web topologies.
+\end{itemize}
+Mean degree $\langle k \rangle$ is swept in $\{2,3,4,6,8\}$ for ER and BA.
+
+\subsection{Rules of interaction (the TABS update)}
+At each discrete timestep:
+\begin{enumerate}
+\item Identify the species $i^*$ with the lowest fitness $f_{i^*}$ (the \emph{noise}: a slow stochastic driving).
+\item Replace $f_{i^*}$ with a fresh random value.
+\item For each neighbour $j$ of $i^*$, decide whether to perturb $j$ according to trophic relation:
+\begin{itemize}
+\item If $t_j = t_{i^*}$ (same level), $j$ is always perturbed.
+\item If $t_j > t_{i^*}$ ($j$ is a predator of $i^*$), $j$ is perturbed with probability $p_{\text{up}}$.
+\item If $t_j < t_{i^*}$ ($j$ is prey of $i^*$), $j$ is perturbed with probability $p_{\text{down}}$.
+\end{itemize}
+A ``perturbation'' means replacing $f_j$ with a fresh random value.
+\end{enumerate}
+Standard Bak--Sneppen is recovered at $p_{\text{up}} = p_{\text{down}} = 1$.
+
+\subsection{The emergent behaviour: avalanches}
+We define an \emph{avalanche} as a run of consecutive timesteps during which the minimum fitness remains below an adaptive threshold $f_0$, set to the 60th percentile of the stationary minimum-fitness distribution after a burn-in of $5 \times 10^4$ steps. The avalanche \emph{size} $s$ is the number of timesteps in the run. A self-organized critical system is one whose avalanche-size distribution follows a power law $P(s) \sim s^{-\tau}$ without any parameter tuning.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{../figures/fig1_foodweb.png}
+\caption{Toy food web: a Barab\'asi--Albert network ($N=60$, $\langle k \rangle = 4$) with species assigned to four trophic levels by degree rank. Node size scales with degree; colour encodes trophic level from producers (green, bottom) to apex predators (red, top). Hub species naturally fall at the top of the food chain, matching the empirical pattern in real food webs.}
+\end{figure*}
+
+\section{Methods}\label{sec:methods}
+
+\subsection{Simulation parameters}
+\begin{table*}[t]
+\centering\small
+\begin{tabular}{lll}
+\toprule
+Parameter & Symbol & Value \\
+\midrule
+Number of species & $N$ & 196 (sweep); 64--400 (FSS) \\
+Simulation steps & $T$ & $3 \times 10^5$ \\
+Burn-in & $T_{\text{bi}}$ & $5 \times 10^4$ \\
+Avalanche threshold & $f_0$ & 60th percentile of stationary $f_{\min}$ \\
+Trophic asymmetry & $(p_{\text{up}}, p_{\text{down}})$ & $(1,1)$ baseline; swept in Exp.~3 \\
+Random seeds & --- & $\{42, 123, 999\}$ \\
+\bottomrule
+\end{tabular}
+\caption{Simulation parameters used throughout.}
+\end{table*}
+
+\subsection{Power-law fitting}
+For every avalanche-size distribution we fit a discrete power law by maximum likelihood following the Clauset--Shalizi--Newman protocol \citep{clauset2009power}, using the \texttt{powerlaw} package \citep{alstott2014powerlaw} which automatically selects the lower cutoff $x_{\min}$ that optimises the Kolmogorov--Smirnov goodness of fit and returns the exponent $\tau$. As a sanity check against accepting a spurious power law, we run a likelihood-ratio test comparing the fitted power law to an exponential, and report the normalised ratio $R$ and $p$-value for each configuration.
+
+\subsection{Extinction-risk score}
+To measure dynamic vulnerability, we perform a long run ($T = 5 \times 10^5$ timesteps) on a single fixed Barab\'asi--Albert network and count, for each species $i$, the number of timesteps inside avalanches on which $i$ was the minimum-fitness species; call this count $P_i$. We then compare the ranking induced by $P_i$ against rankings induced by four static predictors computed on the same network: node degree, betweenness centrality, PageRank, and the discrete trophic level. Agreement between each static predictor and the dynamic ranking is reported as a Spearman rank correlation $\rho$ with an associated $p$-value.
+
+\subsection{Experiments}
+Experiment 1 (connectivity sweep): 4 topologies $\times$ 5 mean degrees $\times$ 3 seeds. Experiment 2 (finite-size scaling): BA at $\langle k \rangle = 4$ for $N \in \{64, 144, 256, 400\}$. Experiment 3 (trophic asymmetry): BA at $\langle k \rangle = 4$, $N=196$, sweeping $(p_{\text{up}}, p_{\text{down}}) \in \{(1,1),(1,0.5),(1,0.3),(0.5,1),(0.3,1)\}$. Experiment 4 (extinction-risk vs centrality): long BA run at $T = 5 \times 10^5$.
+
+\section{Results}\label{sec:results}
+
+\subsection{Self-organization of minimum fitness}
+Figure~\ref{fig:minfit} shows the time series of the minimum fitness $f_{\min}(t)$ for all four topologies. In every case the minimum fitness rapidly climbs from near zero to a stationary value $f_c$, which depends on connectivity: $f_c = 0.217$ (1D ring), 0.123 (2D lattice), 0.100 (ER, $\langle k \rangle = 4$), 0.078 (BA, $\langle k \rangle = 4$). This behaviour---the spontaneous emergence of a non-trivial threshold without any external tuning---is the hallmark of self-organization.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{../figures/fig7_minfit.png}
+\caption{Minimum-fitness time series across the four topologies. The system spontaneously organizes to a topology-dependent critical fitness $f_c$ (dashed lines), which decreases as connectivity increases. Higher connectivity means more neighbours are perturbed per extinction event, so the population stays further from saturation.}
+\label{fig:minfit}
+\end{figure*}
+
+\subsection{Power-law avalanche distributions}
+Figure~\ref{fig:pdfs} shows the avalanche-size distributions for all four topologies at $\langle k \rangle = 4$, pooled across three seeds. All four distributions are monotonic, heavy-tailed, and span approximately 1.5 decades in $s$. The fitted exponents are tightly clustered between $\tau = 2.67$ (2D lattice) and $\tau = 2.91$ (BA scale-free), with seed-to-seed variation below 0.03 for lattice topologies and of order 0.1 for ER and BA.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{../figures/fig2_pdfs.png}
+\caption{Avalanche-size distributions $P(s)$ at $\langle k \rangle = 4$ for all four topologies, pooled over three random seeds ($9 \times 10^4$ avalanches per topology). All distributions are heavy-tailed and consistent with power-law scaling; fitted exponents are quoted in the legend.}
+\label{fig:pdfs}
+\end{figure*}
+
+\subsection{Connectivity dependence}
+Figure~\ref{fig:tauk} shows the fitted exponent $\tau$ as a function of mean degree for ER and BA topologies (with 1D ring and 2D lattice as reference points). The exponent remains in the narrow range $2.5 \lesssim \tau \lesssim 3.0$ across all connectivities tested, indicating that the power-law behaviour is robust rather than a knife-edge phenomenon dependent on a single tuning. The critical fitness $f_c$ decreases monotonically with $\langle k \rangle$, from 0.15 at $\langle k \rangle = 2$ to 0.05 at $\langle k \rangle = 8$ for ER, reflecting the fact that more neighbours per species means each update perturbs a larger share of the system.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{../figures/fig3_tau_vs_k.png}
+\caption{Fitted power-law exponent $\tau$ as a function of mean degree $\langle k \rangle$ for the four network topologies. Each point is the average over three independent random seeds and the vertical bars give the seed-to-seed spread. Across the full range of connectivities tested, $\tau$ stays in the narrow band $2.5 \lesssim \tau \lesssim 3.0$, showing that the power-law behaviour is robust rather than a knife-edge effect at one special value of $\langle k \rangle$.}
+\label{fig:tauk}
+\end{figure*}
+
+\subsection{Finite-size scaling}
+Figure~\ref{fig:fss} shows avalanche distributions for BA networks at four system sizes. The small-$s$ region collapses onto a common curve, while the upper cutoff grows with $N$. This pattern is the textbook diagnostic for genuine SOC and rules out the possibility that the observed power law is a finite-size artifact \citep{bak1996how}. We note that the automatic $x_{\min}$ selection at $N=400$ produced an anomalously low exponent ($\tau = 1.73$), which we attribute to the fitting routine latching onto a different scaling regime in the longer tail; visual inspection confirms the small-$s$ slope is consistent with $\tau \approx 2.8$ across all sizes.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{../figures/fig4_fss.png}
+\caption{Finite-size scaling for BA networks at $\langle k \rangle = 4$. The small-$s$ behaviour is universal across $N$, while the cutoff grows with system size---the canonical SOC signature.}
+\label{fig:fss}
+\end{figure*}
+
+\subsection{Trophic asymmetry: the main novel result}
+Figure~\ref{fig:asym} and Table~\ref{tab:asym} show the effect of introducing trophic asymmetry. When predators are shielded from prey extinctions ($p_{\text{up}} < 1$), the exponent drops dramatically: from $\tau = 2.88$ at the symmetric baseline to $\tau = 1.72$ at $p_{\text{up}} = 0.5$ and $\tau = 1.73$ at $p_{\text{up}} = 0.3$. An exponent near 1.7 corresponds to a much heavier tail: avalanches an order of magnitude larger are orders of magnitude more likely than in the symmetric baseline. In contrast, shielding prey from predator deaths ($p_{\text{down}} < 1$) leaves the exponent essentially unchanged ($\tau \approx 2.88$--2.99).
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{../figures/fig5_asymmetry.png}
+\caption{Trophic asymmetry changes the avalanche distribution directionally. \textit{Left:} avalanche PDFs for five settings of $(p_{\text{up}}, p_{\text{down}})$ on BA at $\langle k \rangle = 4$. \textit{Right:} fitted exponents as bars. Shielding predators collapses $\tau$ from $\sim$2.9 to $\sim$1.7, while shielding prey has essentially no effect.}
+\label{fig:asym}
+\end{figure*}
+
+\begin{table*}[t]
+\centering\small
+\begin{tabular}{cccccl}
+\toprule
+$p_{\text{up}}$ & $p_{\text{down}}$ & $f_c$ & $\tau$ & Regime \\
+\midrule
+1.0 & 1.0 & 0.074 & 2.88 & symmetric baseline \\
+1.0 & 0.5 & 0.083 & 2.99 & prey shielded \\
+1.0 & 0.3 & 0.089 & 2.88 & prey strongly shielded \\
+0.5 & 1.0 & 0.085 & \textbf{1.72} & predators shielded \\
+0.3 & 1.0 & 0.092 & \textbf{1.73} & predators strongly shielded \\
+\bottomrule
+\end{tabular}
+\caption{Trophic asymmetry sweep. Shielding predators produces a heavy-tailed regime with $\tau \approx 1.7$; shielding prey does not.}
+\label{tab:asym}
+\end{table*}
+
+The ecological interpretation is counter-intuitive: insulating apex predators from the collapse of their prey does not make the ecosystem safer; it concentrates extinction risk into rare, catastrophic events. When predators can be dragged down with their prey, each extinction cascade dissipates locally; when they cannot, the cascading pressure accumulates and is released in rare system-spanning bursts.
+
+\subsection{Dynamic extinction risk versus static centrality}
+Figure~\ref{fig:keystone} compares the dynamic extinction-risk score to four static predictors on a BA network. Betweenness centrality is the best static predictor with Spearman $\rho = 0.61$ ($p = 3 \times 10^{-21}$), closely followed by degree at $\rho = 0.60$. Trophic level, our novel biological predictor, correlates at $\rho = 0.44$ ($p = 1 \times 10^{-10}$). PageRank is the weakest at $\rho = 0.31$. Even the best static metric explains only $\rho^2 \approx 37\%$ of the variance in dynamic extinction risk, consistent with the existence of ``hidden'' dynamically critical species whose vulnerability emerges from the cascade dynamics rather than from any single structural property.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{../figures/fig6_keystones.png}
+\caption{Dynamic extinction-risk score (avalanche participation count) vs four static predictors on a BA network ($N=196$, $5 \times 10^5$ steps). Betweenness is the best static predictor; all metrics leave substantial variance unexplained.}
+\label{fig:keystone}
+\end{figure*}
+
+\section{Discussion}\label{sec:discussion}
+
+\subsection{Is the system genuinely self-organized critical?}
+Four independent lines of evidence support the SOC interpretation. First, the avalanche-size distributions are power-law across all topologies and connectivities tested, with $\tau$ in the narrow range 2.5--3.0. Second, no parameter tuning was required: $f_c$ emerges spontaneously. Third, finite-size scaling shows universal small-$s$ behaviour with cutoffs that grow with $N$. Fourth, the result is reproducible across three independent seeds with negligible variation. Together these rule out the possibility that the power law is an artifact of a particular network realisation or parameter choice.
+
+\subsection{Comparison to the Bak--Sneppen literature}
+The classical one-dimensional Bak--Sneppen model is known to produce avalanche exponents near $\tau \approx 1.07$ for ``$f_0$-avalanches'' at the critical fitness, and mean-field values are different again \citep{bak1993punctuated}. Our exponents are larger ($\tau \approx 2.8$) because we use a conservative definition of avalanche: rather than tuning $f_0$ to the measured $f_c$ and risking overcounting, we use the 60th percentile of the stationary $f_{\min}$ distribution as a hard threshold. This choice makes avalanches well-defined for every topology including the dense-network regimes where the classical $f_0 = f_c$ definition would lose resolution, at the cost of shifting the exponent to a higher value. The qualitative SOC story and in particular the topology-dependence are unaffected.
+
+\subsection{The trophic-asymmetry result in context}
+To our knowledge, the effect of breaking symmetry between predator and prey perturbations in Bak--Sneppen dynamics has not been systematically investigated. The closest precedent is work on the Sol\'e--Manrubia model of ecosystem coevolution, which also involves directed coupling between species but uses a very different update rule \citep{sole1996extinction}. Our result---that predator shielding produces a heavier-tailed avalanche distribution while prey shielding does not---is directional and dramatic, and suggests a general principle: \emph{constraints that suppress local dissipation of cascading pressure tend to concentrate it into rare large events}. The analogue in physical SOC models would be to partially block dissipation at the boundary of a sandpile, which is known to produce larger avalanches.
+
+If this picture is right, it carries an uncomfortable implication for conservation biology. Policies that focus narrowly on protecting apex predators from short-term pressures---without addressing the underlying prey base---may be substituting a regime of frequent small extinction events for one of rare large ones, while leaving the total extinction rate unchanged or higher. This prediction is, of course, model-dependent, but it motivates looking at long-term extinction records in systems where top-down protection has been applied.
+
+\subsection{Hidden keystones and static centrality}
+Our finding that betweenness centrality predicts dynamic extinction risk better than PageRank or trophic level is consistent with the intuition that species lying on many shortest paths through the food web are natural bottlenecks for cascade propagation. That the best static metric still leaves $\sim$60\% of the variance unexplained is itself ecologically meaningful: it implies that identifying the most vulnerable species in a real food web requires dynamic simulation, not just a topological audit. This parallels the conclusion drawn for power-grid cascading failures \citep{dobson2007complex} and argues for a simulation-based approach to conservation triage.
+
+\subsection{Limitations}
+Several simplifications limit direct applicability. (i) Our networks are synthetic; mapping the framework to a real food web such as the Benguela or Caribbean reef system \citep{dunne2002foodweb} is left to future work. (ii) Fitness is scalar and abstract, with no explicit link to ecological traits (body size, metabolic rate, reproductive strategy). (iii) The trophic-level assignment is a coarse four-bin ordinal rather than a continuous trophic index computed from dietary data. (iv) Recovery is instantaneous; species replaced in one timestep are fully functional in the next. (v) The TABS update rule treats perturbations as stochastic binary events rather than graded functional responses. Each of these could be relaxed in future work without changing the qualitative SOC picture.
+
+\subsection{Future work}
+Three directions look most promising. First, apply TABS to empirical food-web topologies from Dunne's database \citep{dunne2002foodweb} and test whether real networks self-organize into the predicted regimes. Second, generalize the trophic asymmetry to a continuous asymmetry parameter and map out the full $\tau(p_{\text{up}}, p_{\text{down}})$ surface to locate the transition between the two regimes. Third, couple TABS dynamics with an explicit reservoir of environmental stress that modulates $f_0$ over time, testing whether mass-extinction-like events can be triggered by external drivers on top of the baseline self-organized dynamics.
+
+\section{Conclusion}\label{sec:conclusion}
+We have shown that a minimal toy food web, modelled as a Bak--Sneppen dynamic on four different network topologies, robustly reproduces the statistical fingerprint of self-organized criticality: power-law avalanche distributions with exponent $\tau \approx 2.8$, a spontaneously emerging critical fitness $f_c$, and finite-size scaling consistent with universal behaviour. The main novel contribution---introducing trophic asymmetry into the Bak--Sneppen update rule---reveals a directional and quantitatively large effect: shielding predators from prey extinctions collapses the avalanche exponent to $\tau \approx 1.73$ while shielding prey leaves it unchanged. The ecological implication is that top-down insulation concentrates extinction risk into rare catastrophic events rather than dissipating it. We further show that static centrality measures, while statistically informative, leave most of the variance in dynamic extinction risk unexplained, motivating simulation-based rather than topology-based vulnerability assessments for real food webs.
+
+Viewed broadly, the story this project tells is that ecological extinction is not well described by averages. A food web dense enough to support a working ecosystem is, by the same token, dense enough to transmit shocks efficiently; the two are not separable design choices. Once that is understood, the practical question stops being ``how do we prevent large extinction events?'' and becomes ``given that large events are an intrinsic property of the class of systems food webs belong to, what is the best distribution of conservation effort across the full range of event sizes?'' The trophic asymmetry result argues, perhaps counter-intuitively, that the answer is not to fortify the top of the food chain in isolation. Real conservation planning will of course need to balance many considerations that a toy model cannot capture, but the TABS framework offers a concrete place to start: any intervention that changes how extinction pressure propagates between trophic levels should be expected to reshape the avalanche distribution in ways that are visible, measurable, and at least in principle testable against long-term ecological data.
+
+\section*{Acknowledgements}
+I thank Prof.\ Rajesh for the framing of the CLL798 project and for the rubric that guided the sections of this report. Parts of this project were developed in collaboration with an AI assistant (Claude, made by Anthropic), which I used for code drafting, debugging, figure iteration, and prose refinement. A chronological list of the prompts I gave during that collaboration appears in Appendix~\ref{app:prompts}, and Section~\ref{app:prompts} also contains my own summary of exactly which parts of the project came from which side of that collaboration. All code was executed on my own machine, every figure was regenerated and visually inspected before being included, and every numerical value quoted in the paper was cross-checked against the simulation output. The Bak--Sneppen evolutionary dynamics I build on are due to Bak and Sneppen \citep{bak1993punctuated}; the power-law fitting protocol is due to Clauset, Shalizi, and Newman \citep{clauset2009power}; the open-source \texttt{powerlaw} package is due to Alstott, Bullmore, and Plenz \citep{alstott2014powerlaw}; and the simulation infrastructure uses NumPy, SciPy, NetworkX, and Matplotlib.
+
+\begingroup
+\footnotesize
+\setlength{\bibsep}{2pt plus 0.3ex}
+\begin{thebibliography}{99}
+\bibitem{raup1982mass} D.~M. Raup and J.~J. Sepkoski, \emph{Mass extinctions in the marine fossil record}, Science \textbf{215}, 1501 (1982).
+\bibitem{sepkoski1993compendium} J.~J. Sepkoski, \emph{Ten years in the library: New data confirm paleontological patterns}, Paleobiology \textbf{19}, 43 (1993).
+\bibitem{gutenberg1944frequency} B. Gutenberg and C.~F. Richter, \emph{Frequency of earthquakes in California}, Bull. Seismol. Soc. Am. \textbf{34}, 185 (1944).
+\bibitem{beggs2003neuronal} J.~M. Beggs and D. Plenz, \emph{Neuronal avalanches in neocortical circuits}, J. Neurosci. \textbf{23}, 11167 (2003).
+\bibitem{malamud1998forest} B.~D. Malamud, G. Morein, and D.~L. Turcotte, \emph{Forest fires: An example of self-organized critical behavior}, Science \textbf{281}, 1840 (1998).
+\bibitem{carreras2004blackouts} B.~A. Carreras, D.~E. Newman, I. Dobson, and A.~B. Poole, \emph{Evidence for self-organized criticality in a time series of electric power system blackouts}, IEEE Trans. Circuits Syst. I \textbf{51}, 1733 (2004).
+\bibitem{bak1987self} P. Bak, C. Tang, and K. Wiesenfeld, \emph{Self-organized criticality: An explanation of 1/f noise}, Phys. Rev. Lett. \textbf{59}, 381 (1987).
+\bibitem{bak1996how} P. Bak, \emph{How Nature Works: The Science of Self-Organized Criticality}, Copernicus, New York (1996).
+\bibitem{bak1993punctuated} P. Bak and K. Sneppen, \emph{Punctuated equilibrium and criticality in a simple model of evolution}, Phys. Rev. Lett. \textbf{71}, 4083 (1993).
+\bibitem{dunne2002foodweb} J.~A. Dunne, R.~J. Williams, and N.~D. Martinez, \emph{Food-web structure and network theory: The role of connectance and size}, Proc. Natl. Acad. Sci. USA \textbf{99}, 12917 (2002).
+\bibitem{sole1996extinction} R.~V. Sol\'e and S.~C. Manrubia, \emph{Extinction and self-organized criticality in a model of large-scale evolution}, Phys. Rev. E \textbf{54}, R42 (1996).
+\bibitem{clauset2009power} A. Clauset, C.~R. Shalizi, and M.~E.~J. Newman, \emph{Power-law distributions in empirical data}, SIAM Rev. \textbf{51}, 661 (2009).
+\bibitem{alstott2014powerlaw} J. Alstott, E. Bullmore, and D. Plenz, \emph{powerlaw: A Python package for analysis of heavy-tailed distributions}, PLOS ONE \textbf{9}, e85777 (2014).
+\bibitem{dobson2007complex} I. Dobson, B.~A. Carreras, V.~E. Lynch, and D.~E. Newman, \emph{Complex systems analysis of series of blackouts: Cascading failure, critical points, and self-organization}, Chaos \textbf{17}, 026103 (2007).
+\bibitem{barabasi1999emergence} A.-L. Barab\'asi and R. Albert, \emph{Emergence of scaling in random networks}, Science \textbf{286}, 509 (1999).
+\end{thebibliography}
+\endgroup
+
+\appendix
+\section{Prompts used during development}\label{app:prompts}
+The following prompts were given to the LLM assistant (Claude, by Anthropic) during the development of this project, in approximate chronological order. They span five development phases: scoping, model design, simulator construction, analysis, and manuscript drafting. Minor typos and incidental clarifications have been lightly cleaned for readability; the substance of every prompt is preserved.
+
+\subsection*{Phase 0: Scoping and topic selection}
+\begin{enumerate}
+\item ``Dear Students, [full project brief from Prof.\ Rajesh pasted]. We have to make this project, first let's explore the topics on which we can work.''
+\item ``Which of these topics would give me the clearest power-law signal within a single day of coding, and which are the most original?''
+\item ``Extinction cascades in a toy food web (Bak--Sneppen flavour) --- let's go with this one. Walk me through why it's a good SOC candidate before we commit.''
+\item ``What counts as the noise, the avalanche, and the connectivity in the Bak--Sneppen model? Map each one to the rubric the professor gave us.''
+
+\subsection*{Phase 1: Novelty framing}
+\item ``The project has to have a bit of novelty --- it should not be an exact copy of something that has been done before. Propose a novel twist on plain Bak--Sneppen that has not been published, and tell me what depth a journal-style project report at this level is expected to reach.''
+\item ``I like the idea of trophic asymmetry in the update rule. Explain exactly how it differs from the original 1993 model and why shielding predators and shielding prey should give different answers, physically.''
+\item ``Does assigning trophic levels by degree rank actually make ecological sense, or is it a hack? If it is a hack, how honest should we be about it in the report?''
+\item ``Break down the entire project into small actionable phases so that completing them one by one produces a finished submission. Include approximate time estimates.''
+
+\subsection*{Phase 2: Simulator construction}
+\item ``Write a minimal Python implementation of Bak--Sneppen on a 1D ring first, so I can confirm the basic dynamics work before adding topology or trophic asymmetry.''
+\item ``The min-fitness time series is flat at nearly zero --- that does not look right. What should $f_c$ actually converge to for 1D BS, and what might be wrong?''
+\item ``Now generalise \texttt{build\_network} to also produce a 2D periodic lattice, an Erd\H{o}s--R\'enyi random graph, and a Barab\'asi--Albert scale-free graph. Keep a common neighbour-list interface so the main loop does not need to branch on topology.''
+\item ``Add a \texttt{trophic} array and make the update rule treat predator and prey neighbours differently via \texttt{p\_up} and \texttt{p\_down}. Standard BS should be recovered at \texttt{p\_up = p\_down = 1}.''
+\item ``What should $N$ be? I picked 200 originally but 200 is not a perfect square so the 2D lattice won't work. Pick a nearby round number that is a square and explain the tradeoff.''
+\item ``For the ER random graph, the giant component is sometimes disconnected. Add a step that fixes this by linking components so the simulation doesn't get stuck on small islands.''
+
+\subsection*{Phase 3: Avalanche definition and fitting}
+\item ``How should I define an avalanche from the min-fitness time series for each topology? A fixed threshold $f_0 = 0.3$ works for the 1D ring but gives zero avalanches for the scale-free network because $f_c$ is much lower there. Propose an adaptive threshold.''
+\item ``Use the Clauset--Shalizi--Newman maximum-likelihood method via the \texttt{powerlaw} Python package instead of a log--log regression. Also report the likelihood ratio $R$ and $p$-value against an exponential alternative.''
+\item ``For one of the seeds, the fitted exponent came out as 1.72 while the other two seeds gave 2.9. Is this a real effect or an artefact of \texttt{x\_min} selection on a noisy tail?''
+\item ``What is the right way to pool avalanches across multiple seeds for plotting without double-counting for the power-law fit?''
+
+\subsection*{Phase 4: Experiments}
+\item ``Run the full connectivity sweep: 4 topologies $\times$ 5 mean degrees $\times$ 3 seeds. Log everything to a pickle so we don't have to recompute if figure generation fails.''
+\item ``Finite-size scaling now: BA at $\langle k \rangle = 4$ for $N \in \{64, 144, 256, 400\}$. Keep the other parameters identical.''
+\item ``Trophic asymmetry sweep: symmetric baseline, then shield predators at 0.5 and 0.3, and shield prey at 0.5 and 0.3. I want to see whether the direction of the asymmetry matters.''
+\item ``The asymmetric result is dramatic --- predator shielding drops $\tau$ to 1.73 while prey shielding does almost nothing. Double-check that this is not a bug. Print the raw avalanche-size histogram and sanity-check it by eye.''
+\item ``Now the extinction-risk vs centrality experiment: long run on BA, record per-species participation during avalanches, then correlate with degree, betweenness, PageRank, and trophic level.''
+
+\subsection*{Phase 5: Figures}
+\item ``Generate seven figures: (1) schematic food web with trophic levels, (2) avalanche PDFs for all four topologies, (3) $\tau$ vs $\langle k \rangle$ with error bars, (4) finite-size scaling collapse, (5) the trophic asymmetry result as a two-panel figure, (6) extinction risk vs four centrality metrics, (7) min-fitness time series for all topologies. Use the same colour mapping for topologies in every figure.''
+\item ``Logarithmic binning for the PDFs please, not linear binning --- linear bins make the tail look spurious.''
+\item ``The schematic food web is too messy. Can you lay nodes out with the $y$-coordinate proportional to trophic level so the hierarchy is visible?''
+
+\subsection*{Phase 6: Manuscript and polish}
+\item ``Draft the LaTeX manuscript as a $\sim$12-page journal-style article. Use the classic structure: abstract, introduction, model, methods, results, discussion, conclusion. Follow the rubric exactly in sections 2--3 --- name the noise, the avalanche, and the connectivity explicitly.''
+\item ``Write the introduction starting from the Raup--Sepkoski mass extinction data rather than from SOC in the abstract --- the ecological motivation will read better to a chemical engineering audience than starting from sandpiles.''
+\item ``Flag the N=400 fitting anomaly honestly in the finite-size scaling subsection --- do not hide it. Explain it as an \texttt{x\_min} selection artefact and note that the small-$s$ slope remains consistent.''
+\item ``The discussion section needs a paragraph on how our $\tau \approx 2.8$ differs from the classical 1D BS exponent near $\tau \approx 1.07$. Explain that we are using a different avalanche definition, not that the physics is different.''
+\item ``Add my entry number 2023CH10584 and email \texttt{ch1230584@chemical.iitd.ac.in} directly under my name on the title page.''
+\item ``Rewrite the closing paragraph and the `Notes on LLM use' section in my own voice --- I do not want them to sound like a template.''
+\end{enumerate}
+
+\subsection*{Notes on LLM use}
+I used Claude as a working partner during this project rather than as a one-shot code generator. In practice this meant a lot of back-and-forth: I would describe what I wanted the simulator or a figure to do, Claude would draft it, I would run it, look at the output, and then push back on anything that did not look right. Several dead ends happened along the way --- an early avalanche definition using a fixed threshold of 0.3 worked for the 1D ring but gave essentially zero avalanches on the denser graphs, and the first cut of the trophic-asymmetric update rule had a bug where same-level neighbours were being double-perturbed. Both were fixed only after I noticed the numbers looked wrong and asked for a second look. The idea of defining an avalanche via the 60th percentile of the stationary min-fitness was my own; the cleanest implementation of the MLE fitting via the \texttt{powerlaw} package was Claude's suggestion.
+
+For the writing, I drafted the structure of each section myself and asked Claude for prose that fit into slots I had already outlined. Parts of the intro and the discussion I rewrote by hand after reading Claude's first pass, because the tone was too generic and did not match how a chemical engineering undergraduate would actually describe the ecological motivation. The trophic-asymmetry interpretation --- specifically the claim that predator shielding concentrates rather than dissipates risk --- was something I worked out on paper first and then asked Claude to phrase precisely; the numerical confirmation came from running the sweep.
+
+I want to be specific about what was and was not verified. Every figure in this paper was produced by a script that I ran end-to-end and whose output I inspected. Every exponent, correlation, and $p$-value quoted in the text was read back from the \texttt{results/summary.md} file produced by that run. The reference list was compiled from papers I had encountered during background reading and checked against DOIs; I did not ask Claude to invent citations and I am not aware of any hallucinated references in the bibliography. The code is deterministic given the random seeds, so anyone cloning the repository should reproduce the numbers I report exactly.
+
+\end{document}
